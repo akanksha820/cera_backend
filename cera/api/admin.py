@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import ugettext_lazy as _
-from cera.api.models import User
+from cera.api.models import User, Organization
 
 # Register your models here.
 
@@ -41,3 +41,4 @@ class UserAdmin(DjangoUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
+admin.site.register(Organization)

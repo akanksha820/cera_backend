@@ -1,9 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-
-# from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-
 from django.db import models
 from rest_framework import serializers
+from uuid import uuid4
 
 from .base_model import BaseModel
 
@@ -47,11 +45,11 @@ class User(AbstractUser, BaseModel):
     deleted_at = None
     created_at = None
 
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     username = models.EmailField(unique=True, max_length=254)
     first_name = models.CharField(max_length=150, verbose_name="first name")
     last_name = models.CharField(max_length=150, verbose_name="last name")
     phone = models.CharField(max_length=150, verbose_name="phone number")
-
     is_archived = models.BooleanField(default=False)
 
     objects = UserManager()

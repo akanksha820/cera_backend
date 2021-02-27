@@ -23,7 +23,13 @@ from drf_yasg import openapi
 from oauth2_provider import views as oauth2_views
 from django.urls import re_path
 
-from cera.api.views import UserView, TokenApiView, UserIdentityView
+from cera.api.views import (
+    UserView,
+    TokenApiView,
+    UserIdentityView,
+    OrganizationView,
+    OrganizationUserView,
+)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -99,6 +105,12 @@ oauth2_management_urlpatterns = [
 urlpatterns = [
     path("me", UserIdentityView.as_view(), name="identity"),
     path("user", UserView.as_view(), name="user_view"),
+    path("organization", OrganizationView.as_view(), name="organization_view"),
+    re_path(
+        "organization/(?P<pk>.+)$",
+        OrganizationUserView.as_view(),
+        name="organization_user_view",
+    ),
     path("admin", admin.site.urls),
     path(
         "o/",
