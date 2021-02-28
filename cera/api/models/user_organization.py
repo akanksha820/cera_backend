@@ -3,6 +3,7 @@ Model for organization
 """
 from rest_framework import serializers
 from .base_model import BaseModel, models
+from .role import Role
 from uuid import uuid4
 
 
@@ -22,6 +23,10 @@ class UserOrganization(BaseModel):
         "Organization",
         related_name="users",
         on_delete=models.CASCADE,
+    )
+
+    role = models.ForeignKey(
+        "Role", related_name="user_organizations", on_delete=models.CASCADE
     )
 
     class Meta:

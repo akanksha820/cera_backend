@@ -29,6 +29,7 @@ from cera.api.views import (
     UserIdentityView,
     OrganizationView,
     OrganizationUserView,
+    OrganizationRoleView,
 )
 
 schema_view = get_schema_view(
@@ -106,6 +107,11 @@ urlpatterns = [
     path("me", UserIdentityView.as_view(), name="identity"),
     path("user", UserView.as_view(), name="user_view"),
     path("organization", OrganizationView.as_view(), name="organization_view"),
+    path(
+        "organization_role",
+        OrganizationRoleView.as_view(),
+        name="organization_role_view",
+    ),
     re_path(
         "organization/(?P<pk>.+)$",
         OrganizationUserView.as_view(),

@@ -5,6 +5,10 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from rest_framework.views import APIView
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
 from oauth2_provider.views.generic import ProtectedResourceView
 from drf_yasg.utils import swagger_auto_schema
 
@@ -14,7 +18,11 @@ from cera.api.models import (
     Organization,
     UserOrganization,
     UserOrganizationSerializer,
+    OrganizationUserSerializer,
+    Role,
 )
+
+from cera.api.utils import UserNotInOrgException
 
 import sys
 
@@ -39,15 +47,23 @@ class OrganizationUserView(ProtectedResourceView, APIView):
 
             org_users = organization.users.all()
 
-            serializer = UserSerializer(
-                [org_user.user for org_user in org_users], many=True
-            )
+            users = []
+            for org_user in org_users:
+                user = org_user.user
+                user.role = org_user.role
+                users.append(user)
+
+            serializer = OrganizationUserSerializer(users, many=True)
 
             return JsonResponse(serializer.data, safe=False)
         except Organization.DoesNotExist:
-            return JsonResponse({"detail": "Org not found"}, status=400)
+            return JsonResponse(
+                {"detail": "Org not found"}, status=HTTP_400_BAD_REQUEST
+            )
         except ValidationError as e:
-            return JsonResponse({"detail": e.messages}, status=400)
+            return JsonResponse(
+                {"detail": e.messages}, status=HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             print("Unexpected error:", sys.exc_info()[0])
             print(str(e))
@@ -58,32 +74,115 @@ class OrganizationUserView(ProtectedResourceView, APIView):
     def post(self, request, **kwargs):
         organization_id = kwargs["pk"]
 
-        organization = Organization.objects.get(pk=organization_id)
+        try:
+            organization = Organization.objects.get(pk=organization_id)
 
-        if not organization:
-            raise Organization.DoesNotExist
+            if not organization:
+                raise Organization.DoesNotExist
 
-        user = User.objects.get(pk=request.user.id)
+            user = User.objects.get(pk=request.user.id)
 
-        if user is None:
-            raise User.DoesNotExist
+            if user is None:
+                raise User.DoesNotExist
 
-        if not user.has_perm("api.add_user"):
-            return HttpResponseForbidden()
+            # if not user.has_perm("api.add_user"):
+            #     return HttpResponseForbidden()
 
-        serializer = UserSerializer(data=request.data)
+            serializer = OrganizationUserSerializer(data=request.data)
 
-        if not serializer.is_valid():
-            return JsonResponse(serializer.errors)
+            if not serializer.is_valid():
+                return JsonResponse(serializer.errors)
 
-        with transaction.atomic():
+            serializer.save(organization=organization)
 
-            db_user = serializer.save()
+            return JsonResponse(serializer.data)
 
-            user_organization = UserOrganization.objects.create(
-                user=db_user, organization=organization
+        except Organization.DoesNotExist:
+            return JsonResponse(
+                {"detail": "Org not found"}, status=HTTP_400_BAD_REQUEST
+            )
+        except Role.DoesNotExist:
+            return JsonResponse(
+                {"detail": "Role not found"}, status=HTTP_400_BAD_REQUEST
+            )
+        except User.DoesNotExist:
+            return JsonResponse(
+                {"detail": "User not found"}, status=HTTP_400_BAD_REQUEST
+            )
+        except ValidationError as e:
+            return JsonResponse(
+                {"detail": e.messages}, status=HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            print("Unexpected error:", sys.exc_info()[0])
+            print(str(e))
+            return JsonResponse(
+                {"detail": "Internal Error"},
+                safe=False,
+                status=HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-            organization.users.add(user_organization)
+    def put(self, request, **kwargs):
+        organization_id = kwargs["pk"]
 
-        return JsonResponse(serializer.data)
+        try:
+            organization = Organization.objects.get(pk=organization_id)
+
+            if not organization:
+                raise Organization.DoesNotExist
+
+            auth_user = User.objects.get(pk=request.user.id)
+
+            if auth_user is None:
+                raise User.DoesNotExist
+
+            # Should be checked if the user has permission to add user or
+            # for only one's own organization
+            # if not auth_user.has_perm("api.add_user"):
+            #     return HttpResponseForbidden()
+
+            user_id = request.data["id"]
+
+            user = User.objects.get(pk=user_id)
+
+            # This is not needed as we are saving first and roles
+            # is set to user there
+            # user.role = user_org[0].role
+
+            serializer = OrganizationUserSerializer(user, data=request.data)
+
+            if not serializer.is_valid():
+                return JsonResponse(serializer.errors)
+
+            serializer.save(organization=organization)
+
+            return JsonResponse(serializer.data)
+
+        except Organization.DoesNotExist:
+            return JsonResponse(
+                {"detail": "Org not found"}, status=HTTP_400_BAD_REQUEST
+            )
+        except Role.DoesNotExist:
+            return JsonResponse(
+                {"detail": "Role not found"}, status=HTTP_400_BAD_REQUEST
+            )
+        except User.DoesNotExist:
+            return JsonResponse(
+                {"detail": "User not found"}, status=HTTP_400_BAD_REQUEST
+            )
+        except ValidationError as e:
+            return JsonResponse(
+                {"detail": e.messages}, status=HTTP_400_BAD_REQUEST
+            )
+        except UserNotInOrgException as e:
+            return JsonResponse(
+                {"detail": e.message}, status=HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            print("Unexpected error:", sys.exc_info()[0])
+            print(str(e))
+            return JsonResponse(
+                {"detail": "Internal Error"},
+                safe=False,
+                status=HTTP_500_INTERNAL_SERVER_ERROR,
+            )

@@ -14,15 +14,15 @@ class Organization(BaseModel):
     deleted_at = None
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    name = models.CharField(max_length=255)
+    name = models.TextField()
     street_1 = models.TextField()
     street_2 = models.TextField(null=True)
     city = models.TextField()
     county = models.TextField(null=True)
     state = models.TextField()
     country = models.TextField()
-    postal_code = models.CharField(max_length=255)
-    phone = models.CharField(max_length=255, null=True)
+    postal_code = models.TextField()
+    phone = models.TextField(null=True)
     is_archived = models.BooleanField(default=False)
 
     class Meta:
