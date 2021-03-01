@@ -26,7 +26,7 @@ class Organization(BaseModel):
     is_archived = models.BooleanField(default=False)
 
     class Meta:
-        db_table = "organizations"
+        db_table = "organization"
 
 
 class OrganizationSerializer(serializers.ModelSerializer):

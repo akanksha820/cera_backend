@@ -1,5 +1,5 @@
 """
-Views for me endpoint
+Views for organization roles endpoint
 """
 from django.http import JsonResponse
 from rest_framework.views import APIView
@@ -11,7 +11,7 @@ from cera.api.models import Role, RoleSerializer, OrganizationTypeEnum
 
 class OrganizationRoleView(ProtectedResourceView, APIView):
     """
-    Class for /me
+    Class for /organization_role
     """
 
     @swagger_auto_schema(

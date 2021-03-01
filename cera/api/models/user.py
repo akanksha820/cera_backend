@@ -71,7 +71,7 @@ class User(AbstractUser, BaseModel):
 
     class Meta:
         app_label = "api"
-        db_table = "users"
+        db_table = "user"
 
 
 class UserSerializer(serializers.ModelSerializer):

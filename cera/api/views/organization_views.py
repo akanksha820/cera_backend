@@ -1,5 +1,5 @@
 """
-Views for me endpoint
+Views for organization endpoint
 """
 from django.http import JsonResponse, HttpResponseForbidden
 from rest_framework.views import APIView
@@ -9,9 +9,9 @@ from drf_yasg.utils import swagger_auto_schema
 from cera.api.models import User, Organization, OrganizationSerializer
 
 
-class OrganizationView(ProtectedResourceView, APIView):
+class OrganizationCreateGetView(ProtectedResourceView, APIView):
     """
-    Class for /me
+    Class for /organization
     """
 
     @swagger_auto_schema(
@@ -24,8 +24,8 @@ class OrganizationView(ProtectedResourceView, APIView):
         if user is None:
             raise User.DoesNotExist
 
-        if not user.has_perm("api.view_organization"):
-            return HttpResponseForbidden()
+        # if not user.has_perm("api.view_organization"):
+        #     return HttpResponseForbidden()
 
         organizations = Organization.objects.all()
 
@@ -43,8 +43,8 @@ class OrganizationView(ProtectedResourceView, APIView):
         if user is None:
             raise User.DoesNotExist
 
-        if not user.has_perm("api.create_organization"):
-            return HttpResponseForbidden()
+        # if not user.has_perm("api.create_organization"):
+        #     return HttpResponseForbidden()
 
         serializer = OrganizationSerializer(data=request.data)
 
@@ -52,5 +52,51 @@ class OrganizationView(ProtectedResourceView, APIView):
             return JsonResponse(serializer.errors)
 
         serializer.save()
+
+        return JsonResponse(serializer.data)
+
+
+class OrganizationUpdateView(ProtectedResourceView, APIView):
+    """
+    Class for /organization/<pk>
+    """
+
+    @swagger_auto_schema(
+        operation_description="Create a new organization",
+        responses={200: OrganizationSerializer(many=True)},
+        request_body=OrganizationSerializer(),
+    )
+    def put(self, request, **kwargs):
+        user = User.objects.get(pk=request.user.id)
+
+        if user is None:
+            raise User.DoesNotExist
+
+        org_id = kwargs["pk"]
+
+        # if not user.has_perm("api.create_organization"):
+        #     return HttpResponseForbidden()
+
+        try:
+            organization = Organization.objects.get(pk=org_id)
+
+            serializer = OrganizationSerializer(
+                organization, data=request.data
+            )
+
+            if not serializer.is_valid():
+                return JsonResponse(serializer.errors)
+
+            serializer.save()
+        except Organization.DoesNotExist:
+            return JsonResponse(
+                {"detail": "Org not found"}, status=HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            print("Unexpected error:", sys.exc_info()[0])
+            print(str(e))
+            return JsonResponse(
+                {"detail": "Internal Error"}, safe=False, status=500
+            )
 
         return JsonResponse(serializer.data)

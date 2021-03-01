@@ -25,7 +25,7 @@ class Role(BaseModel):
     organization_type = models.TextField(choices=OrganizationTypeEnum.choices)
 
     class Meta:
-        db_table = "roles"
+        db_table = "role"
 
 
 class RoleSerializer(serializers.ModelSerializer):

@@ -27,8 +27,10 @@ from cera.api.views import (
     UserView,
     TokenApiView,
     UserIdentityView,
-    OrganizationView,
-    OrganizationUserView,
+    OrganizationCreateGetView,
+    OrganizationUpdateView,
+    OrganizationUserCreateGetView,
+    OrganizationUserUpdateView,
     OrganizationRoleView,
 )
 
@@ -106,16 +108,30 @@ oauth2_management_urlpatterns = [
 urlpatterns = [
     path("me", UserIdentityView.as_view(), name="identity"),
     path("user", UserView.as_view(), name="user_view"),
-    path("organization", OrganizationView.as_view(), name="organization_view"),
+    path(
+        "organization",
+        OrganizationCreateGetView.as_view(),
+        name="organization_create_get_view",
+    ),
+    re_path(
+        "organization/(?P<pk>.+)$",
+        OrganizationUpdateView.as_view(),
+        name="organization_update_view",
+    ),
     path(
         "organization_role",
         OrganizationRoleView.as_view(),
         name="organization_role_view",
     ),
     re_path(
-        "organization/(?P<pk>.+)$",
-        OrganizationUserView.as_view(),
-        name="organization_user_view",
+        "organization/(?P<pk>.+)/user$",
+        OrganizationUserCreateGetView.as_view(),
+        name="organization_user_create_get_view",
+    ),
+    re_path(
+        "organization/(?P<org_pk>.+)/user/(?P<user_pk>.+)$",
+        OrganizationUserUpdateView.as_view(),
+        name="organization_user_update_view",
     ),
     path("admin", admin.site.urls),
     path(

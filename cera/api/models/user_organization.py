@@ -30,7 +30,7 @@ class UserOrganization(BaseModel):
     )
 
     class Meta:
-        db_table = "user_organizations"
+        db_table = "user_organization"
 
 
 class UserOrganizationSerializer(serializers.ModelSerializer):

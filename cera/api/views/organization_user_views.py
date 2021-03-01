@@ -1,5 +1,5 @@
 """
-Views for me endpoint
+Views for organization users endpoint
 """
 from django.http import JsonResponse, HttpResponseForbidden
 from django.core.exceptions import ValidationError
@@ -27,9 +27,9 @@ from cera.api.utils import UserNotInOrgException
 import sys
 
 
-class OrganizationUserView(ProtectedResourceView, APIView):
+class OrganizationUserCreateGetView(ProtectedResourceView, APIView):
     """
-    Class for /me
+    Class for /organization/<pk>
     """
 
     @swagger_auto_schema(
@@ -122,8 +122,16 @@ class OrganizationUserView(ProtectedResourceView, APIView):
                 status=HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+
+class OrganizationUserUpdateView(ProtectedResourceView, APIView):
+    """
+    Class for /organization/<org_pk>/<user_pk>
+    """
+
     def put(self, request, **kwargs):
-        organization_id = kwargs["pk"]
+        organization_id = kwargs["org_pk"]
+
+        user_id = kwargs["user_pk"]
 
         try:
             organization = Organization.objects.get(pk=organization_id)
@@ -140,8 +148,6 @@ class OrganizationUserView(ProtectedResourceView, APIView):
             # for only one's own organization
             # if not auth_user.has_perm("api.add_user"):
             #     return HttpResponseForbidden()
-
-            user_id = request.data["id"]
 
             user = User.objects.get(pk=user_id)
 
