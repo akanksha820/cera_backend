@@ -34,7 +34,7 @@ class OrganizationCreateGetView(ProtectedResourceView, APIView):
 
     @swagger_auto_schema(
         operation_description="Create a new organization",
-        responses={200: OrganizationSerializer(many=True)},
+        responses={200: OrganizationSerializer()},
         request_body=OrganizationSerializer(),
     )
     def post(self, request):
@@ -63,7 +63,7 @@ class OrganizationUpdateView(ProtectedResourceView, APIView):
 
     @swagger_auto_schema(
         operation_description="Create a new organization",
-        responses={200: OrganizationSerializer(many=True)},
+        responses={200: OrganizationSerializer()},
         request_body=OrganizationSerializer(),
     )
     def put(self, request, **kwargs):

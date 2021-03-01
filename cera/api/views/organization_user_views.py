@@ -34,7 +34,7 @@ class OrganizationUserCreateGetView(ProtectedResourceView, APIView):
 
     @swagger_auto_schema(
         operation_description="Get the authenticated user's details",
-        responses={200: UserSerializer()},
+        responses={200: UserSerializer(many=True)},
     )
     def get(self, request, **kwargs):
         organization_id = kwargs["pk"]
@@ -71,6 +71,10 @@ class OrganizationUserCreateGetView(ProtectedResourceView, APIView):
                 {"detail": "Internal Error"}, safe=False, status=500
             )
 
+    @swagger_auto_schema(
+        operation_description="Get the authenticated user's details",
+        responses={200: UserSerializer()},
+    )
     def post(self, request, **kwargs):
         organization_id = kwargs["pk"]
 
@@ -128,6 +132,11 @@ class OrganizationUserUpdateView(ProtectedResourceView, APIView):
     Class for /organization/<org_pk>/<user_pk>
     """
 
+    @swagger_auto_schema(
+        operation_description="Get the authenticated user's details",
+        responses={200: UserSerializer()},
+        request_body=UserSerializer(),
+    )
     def put(self, request, **kwargs):
         organization_id = kwargs["org_pk"]
 
