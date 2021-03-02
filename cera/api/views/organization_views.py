@@ -5,10 +5,11 @@ from django.http import JsonResponse, HttpResponseForbidden
 from rest_framework.views import APIView
 from oauth2_provider.views.generic import ProtectedResourceView
 from drf_yasg.utils import swagger_auto_schema
-
 from cera.api.models import User, Organization, OrganizationSerializer
 
+import logging
 
+logger = logging.getLogger(__name__)
 class OrganizationCreateGetView(ProtectedResourceView, APIView):
     """
     Class for /organization
@@ -89,12 +90,12 @@ class OrganizationUpdateView(ProtectedResourceView, APIView):
 
             serializer.save()
         except Organization.DoesNotExist:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Org not found"}, status=HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            print("Unexpected error:", sys.exc_info()[0])
-            print(str(e))
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Internal Error"}, safe=False, status=500
             )

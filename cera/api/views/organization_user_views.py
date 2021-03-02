@@ -2,7 +2,7 @@
 Views for organization users endpoint
 """
 from django.http import JsonResponse, HttpResponseForbidden
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db import transaction
 from rest_framework.views import APIView
 from rest_framework.status import (
@@ -11,7 +11,6 @@ from rest_framework.status import (
 )
 from oauth2_provider.views.generic import ProtectedResourceView
 from drf_yasg.utils import swagger_auto_schema
-
 from cera.api.models import (
     User,
     UserSerializer,
@@ -21,10 +20,11 @@ from cera.api.models import (
     OrganizationUserSerializer,
     Role,
 )
-
 from cera.api.utils import UserNotInOrgException
 
-import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class OrganizationUserCreateGetView(ProtectedResourceView, APIView):
@@ -56,17 +56,18 @@ class OrganizationUserCreateGetView(ProtectedResourceView, APIView):
             serializer = OrganizationUserSerializer(users, many=True)
 
             return JsonResponse(serializer.data, safe=False)
-        except Organization.DoesNotExist:
+        except ObjectDoesNotExist as ex:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Org not found"}, status=HTTP_400_BAD_REQUEST
             )
         except ValidationError as e:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": e.messages}, status=HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            print("Unexpected error:", sys.exc_info()[0])
-            print(str(e))
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Internal Error"}, safe=False, status=500
             )
@@ -102,24 +103,27 @@ class OrganizationUserCreateGetView(ProtectedResourceView, APIView):
             return JsonResponse(serializer.data)
 
         except Organization.DoesNotExist:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Org not found"}, status=HTTP_400_BAD_REQUEST
             )
         except Role.DoesNotExist:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Role not found"}, status=HTTP_400_BAD_REQUEST
             )
         except User.DoesNotExist:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "User not found"}, status=HTTP_400_BAD_REQUEST
             )
         except ValidationError as e:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": e.messages}, status=HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            print("Unexpected error:", sys.exc_info()[0])
-            print(str(e))
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Internal Error"},
                 safe=False,
@@ -174,28 +178,32 @@ class OrganizationUserUpdateView(ProtectedResourceView, APIView):
             return JsonResponse(serializer.data)
 
         except Organization.DoesNotExist:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Org not found"}, status=HTTP_400_BAD_REQUEST
             )
         except Role.DoesNotExist:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Role not found"}, status=HTTP_400_BAD_REQUEST
             )
         except User.DoesNotExist:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "User not found"}, status=HTTP_400_BAD_REQUEST
             )
         except ValidationError as e:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": e.messages}, status=HTTP_400_BAD_REQUEST
             )
         except UserNotInOrgException as e:
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": e.message}, status=HTTP_400_BAD_REQUEST
             )
         except Exception as e:
-            print("Unexpected error:", sys.exc_info()[0])
-            print(str(e))
+            logger.exception(ex)
             return JsonResponse(
                 {"detail": "Internal Error"},
                 safe=False,

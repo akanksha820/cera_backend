@@ -113,8 +113,8 @@ urlpatterns = [
         OrganizationCreateGetView.as_view(),
         name="organization_create_get_view",
     ),
-    re_path(
-        "organization/(?P<pk>.+)$",
+    path(
+        "organization/<str:pk>",
         OrganizationUpdateView.as_view(),
         name="organization_update_view",
     ),
@@ -123,13 +123,13 @@ urlpatterns = [
         OrganizationRoleView.as_view(),
         name="organization_role_view",
     ),
-    re_path(
-        "organization/(?P<pk>.+)/user$",
+    path(
+        "organization/<str:pk>/user",
         OrganizationUserCreateGetView.as_view(),
         name="organization_user_create_get_view",
     ),
-    re_path(
-        "organization/(?P<org_pk>.+)/user/(?P<user_pk>.+)$",
+    path(
+        "organization/<str:org_pk>/user/<str:user_pk>",
         OrganizationUserUpdateView.as_view(),
         name="organization_user_update_view",
     ),
